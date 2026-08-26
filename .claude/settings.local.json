@@ -7,7 +7,28 @@
     "allow": [
       "Bash(git init *)",
       "Bash(git checkout *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(aws sts *)",
+      "Bash(terraform version *)",
+      "Bash(brew list *)",
+      "Bash(brew info *)",
+      "Bash(unzip -o terraform_1.15.9_darwin_arm64.zip)",
+      "Bash(chmod +x terraform)",
+      "Bash(sudo mv terraform /opt/homebrew/bin/terraform)",
+      "Bash(mv terraform *)",
+      "Bash(xattr -d com.apple.quarantine /opt/homebrew/bin/terraform)",
+      "Bash(terraform init *)",
+      "Bash(./scripts/bootstrap-state.sh --region eu-central-1)",
+      "Bash(./scripts/bootstrap-state.sh *)",
+      "Bash(terraform validate *)",
+      "Bash(terraform fmt *)",
+      "Bash(aws configure *)",
+      "Read(//Users/nitinbansod/.aws/**)",
+      "Bash(aws s3api *)",
+      "Bash(echo \"rc=$?\")",
+      "Bash(aws dynamodb *)",
+      "Bash(AWS_PROFILE=dev terraform init -reconfigure -input=false)",
+      "Bash(AWS_PROFILE=dev terraform validate)"
     ]
   },
   "enabledMcpjsonServers": [
