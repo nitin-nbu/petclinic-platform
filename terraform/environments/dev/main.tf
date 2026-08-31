@@ -1,3 +1,13 @@
 # Root module for the dev environment.
-# Module calls (vpc, eks, ecr, rds, dns, secrets, observability) are added
-# as their respective epics land (E-2 through E-7).
+# Module calls (eks, ecr, rds, dns, secrets, observability) are added
+# as their respective epics land (E-3 through E-7).
+
+module "vpc" {
+  source = "../../modules/vpc"
+
+  project             = var.project
+  environment         = var.environment
+  vpc_cidr            = "10.0.0.0/16"
+  public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
+  availability_zones  = ["eu-central-1a", "eu-central-1b"]
+}

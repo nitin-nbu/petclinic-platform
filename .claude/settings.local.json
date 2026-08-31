@@ -28,7 +28,13 @@
       "Bash(echo \"rc=$?\")",
       "Bash(aws dynamodb *)",
       "Bash(AWS_PROFILE=dev terraform init -reconfigure -input=false)",
-      "Bash(AWS_PROFILE=dev terraform validate)"
+      "Bash(AWS_PROFILE=dev terraform validate)",
+      "Bash(rsync -a --exclude .terraform --exclude .terraform.lock.hcl /Users/nitinbansod/Desktop/projects/training/DevOpsClaudeCodeTerraformEKS/spring-petclinic/petclinic-platform/terraform/ /private/tmp/claude-501/-Users-nitinbansod-Desktop-projects-training-DevOpsClaudeCodeTerraformEKS-spring-petclinic-petclinic-platform/b9e93b4f-a5d5-4d53-9e24-bf70c21f2ab7/scratchpad/tf-validate/terraform/)",
+      "Read(//tmp/**)",
+      "Bash(checkov -d /Users/nitinbansod/Desktop/projects/training/DevOpsClaudeCodeTerraformEKS/spring-petclinic/petclinic-platform/terraform/modules/vpc --compact --quiet)",
+      "Bash(rsync -a --delete --exclude .terraform --exclude .terraform.lock.hcl /Users/nitinbansod/Desktop/projects/training/DevOpsClaudeCodeTerraformEKS/spring-petclinic/petclinic-platform/terraform/ /private/tmp/claude-501/-Users-nitinbansod-Desktop-projects-training-DevOpsClaudeCodeTerraformEKS-spring-petclinic-petclinic-platform/b9e93b4f-a5d5-4d53-9e24-bf70c21f2ab7/scratchpad/tf-validate/terraform/)",
+      "Bash(rm -f /private/tmp/claude-501/-Users-nitinbansod-Desktop-projects-training-DevOpsClaudeCodeTerraformEKS-spring-petclinic-petclinic-platform/b9e93b4f-a5d5-4d53-9e24-bf70c21f2ab7/scratchpad/tf-validate/terraform/environments/dev/backend.tf /private/tmp/claude-501/-Users-nitinbansod-Desktop-projects-training-DevOpsClaudeCodeTerraformEKS-spring-petclinic-petclinic-platform/b9e93b4f-a5d5-4d53-9e24-bf70c21f2ab7/scratchpad/tf-validate/terraform/environments/prod/backend.tf)",
+      "Bash(AWS_PROFILE=dev aws sts get-caller-identity *)"
     ]
   },
   "enabledMcpjsonServers": [
