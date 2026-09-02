@@ -34,7 +34,18 @@
       "Bash(checkov -d /Users/nitinbansod/Desktop/projects/training/DevOpsClaudeCodeTerraformEKS/spring-petclinic/petclinic-platform/terraform/modules/vpc --compact --quiet)",
       "Bash(rsync -a --delete --exclude .terraform --exclude .terraform.lock.hcl /Users/nitinbansod/Desktop/projects/training/DevOpsClaudeCodeTerraformEKS/spring-petclinic/petclinic-platform/terraform/ /private/tmp/claude-501/-Users-nitinbansod-Desktop-projects-training-DevOpsClaudeCodeTerraformEKS-spring-petclinic-petclinic-platform/b9e93b4f-a5d5-4d53-9e24-bf70c21f2ab7/scratchpad/tf-validate/terraform/)",
       "Bash(rm -f /private/tmp/claude-501/-Users-nitinbansod-Desktop-projects-training-DevOpsClaudeCodeTerraformEKS-spring-petclinic-petclinic-platform/b9e93b4f-a5d5-4d53-9e24-bf70c21f2ab7/scratchpad/tf-validate/terraform/environments/dev/backend.tf /private/tmp/claude-501/-Users-nitinbansod-Desktop-projects-training-DevOpsClaudeCodeTerraformEKS-spring-petclinic-petclinic-platform/b9e93b4f-a5d5-4d53-9e24-bf70c21f2ab7/scratchpad/tf-validate/terraform/environments/prod/backend.tf)",
-      "Bash(AWS_PROFILE=dev aws sts get-caller-identity *)"
+      "Bash(AWS_PROFILE=dev aws sts get-caller-identity *)",
+      "Bash(AWS_PROFILE=dev terraform init -input=false -upgrade=false)",
+      "Bash(AWS_PROFILE=dev terraform init -input=false)",
+      "Bash(AWS_PROFILE=dev terraform plan -out plan.out -input=false)",
+      "Bash(AWS_PROFILE=dev terraform apply plan.out)",
+      "Bash(AWS_PROFILE=dev aws eks describe-addon-versions --addon-name vpc-cni --query 'addons[0].addonVersions[0].compatibilities[].clusterVersion' --output text)",
+      "Bash(AWS_PROFILE=dev aws eks describe-cluster-versions --output table)",
+      "Bash(AWS_PROFILE=dev aws ec2 describe-instances --instance-ids i-0a9acdf1a25c28988 --query 'Reservations[].Instances[].{public_ip:PublicIpAddress,public_dns:PublicDnsName}' --output json)",
+      "Bash(AWS_PROFILE=dev aws ec2 describe-security-groups --group-ids sg-0d234f0a0ee67cc22 --query 'SecurityGroups[].IpPermissionsEgress' --output json)",
+      "Bash(AWS_PROFILE=dev aws ec2 describe-security-groups --group-ids sg-0405ed16cce850f52 --query 'SecurityGroups[].IpPermissionsEgress' --output json)",
+      "Bash(AWS_PROFILE=dev aws ec2 describe-security-groups --group-ids sg-01d6435e725ab8517 --query 'SecurityGroups[].IpPermissionsEgress' --output json)",
+      "Bash(AWS_PROFILE=dev aws ec2 describe-security-groups --group-ids sg-05bdc264d12ce3ffa --query 'SecurityGroups[].IpPermissionsEgress' --output json)"
     ]
   },
   "enabledMcpjsonServers": [

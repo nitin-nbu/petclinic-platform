@@ -105,10 +105,19 @@ resource "aws_security_group_rule" "eks_cluster_ingress_from_nodes" {
   description              = "API server access from EKS nodes"
 }
 
-# No explicit egress rule here: AWS automatically provisions a default
-# "allow all outbound" egress rule for every newly created security group.
-# Declaring an identical aws_security_group_rule would collide with it and
-# fail at apply time with InvalidPermission.Duplicate.
+# Terraform's aws_security_group resource strips the AWS-provisioned default
+# "allow all outbound" rule on creation (documented provider behavior — this
+# only happens automatically for SGs created directly via the AWS API/console).
+# The control plane's ENIs need outbound access, so it must be declared explicitly.
+resource "aws_security_group_rule" "eks_cluster_egress_all" {
+  type              = "egress"
+  security_group_id = aws_security_group.eks_cluster.id
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "All outbound"
+}
 
 # --- EKS node (worker) security group ---
 
@@ -163,10 +172,20 @@ resource "aws_security_group_rule" "eks_node_ingress_nodeport_from_alb" {
   description              = "NodePort services from ALB"
 }
 
-# No explicit egress rule here: AWS automatically provisions a default
-# "allow all outbound" egress rule for every newly created security group.
-# Declaring an identical aws_security_group_rule would collide with it and
-# fail at apply time with InvalidPermission.Duplicate.
+# Terraform's aws_security_group resource strips the AWS-provisioned default
+# "allow all outbound" rule on creation (documented provider behavior — this
+# only happens automatically for SGs created directly via the AWS API/console).
+# Nodes need outbound access to bootstrap (EC2/EKS/ECR APIs, DNS) and to reach
+# RDS, so it must be declared explicitly.
+resource "aws_security_group_rule" "eks_node_egress_all" {
+  type              = "egress"
+  security_group_id = aws_security_group.eks_node.id
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "All outbound"
+}
 
 # --- RDS security group ---
 # Critical: MySQL (3306) is reachable ONLY from EKS nodes. Never 0.0.0.0/0.

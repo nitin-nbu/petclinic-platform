@@ -29,3 +29,43 @@ output "alb_sg_id" {
   description = "ID of the ALB security group"
   value       = module.vpc.alb_sg_id
 }
+
+output "cluster_name" {
+  description = "Name of the prod EKS cluster"
+  value       = module.eks.cluster_name
+}
+
+output "cluster_endpoint" {
+  description = "EKS API server endpoint"
+  value       = module.eks.cluster_endpoint
+}
+
+output "cluster_ca_certificate" {
+  description = "Base64-encoded certificate authority data for the cluster"
+  value       = module.eks.cluster_ca_certificate
+}
+
+output "oidc_provider_arn" {
+  description = "ARN of the IAM OIDC provider for IRSA"
+  value       = module.eks.oidc_provider_arn
+}
+
+output "oidc_provider_url" {
+  description = "URL of the IAM OIDC provider for IRSA"
+  value       = module.eks.oidc_provider_url
+}
+
+output "node_group_name" {
+  description = "Name of the managed node group"
+  value       = module.eks.node_group_name
+}
+
+output "node_role_arn" {
+  description = "ARN of the node group's IAM role"
+  value       = module.eks.node_role_arn
+}
+
+output "kubeconfig_command" {
+  description = "Command to update local kubeconfig for this cluster"
+  value       = module.eks.kubeconfig_command
+}
