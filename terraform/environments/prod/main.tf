@@ -1,6 +1,19 @@
 # Root module for the prod environment.
-# Module calls (ecr, rds, dns, secrets, observability) are added
-# as their respective epics land (E-4 through E-7).
+# Module calls (rds, dns, secrets, observability) are added
+# as their respective epics land (E-5 through E-7).
+
+locals {
+  service_names = [
+    "config-server",
+    "discovery-server",
+    "api-gateway",
+    "customers-service",
+    "visits-service",
+    "vets-service",
+    "genai-service",
+    "admin-server",
+  ]
+}
 
 module "vpc" {
   source = "../../modules/vpc"
@@ -26,4 +39,14 @@ module "eks" {
   node_min_size       = 2
   node_max_size       = 4
   node_desired_size   = 2
+}
+
+module "ecr" {
+  source = "../../modules/ecr"
+
+  project     = var.project
+  environment = var.environment
+
+  service_names        = local.service_names
+  image_tag_mutability = "IMMUTABLE"
 }
