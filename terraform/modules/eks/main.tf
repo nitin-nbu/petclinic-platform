@@ -349,3 +349,64 @@ resource "aws_eks_addon" "ebs_csi" {
 
   depends_on = [aws_eks_node_group.main]
 }
+
+# ---------------------------------------------------------------------------
+# IRSA role for the AWS Load Balancer Controller (PETPLAT-29)
+# The controller is installed out-of-band via Helm
+# (scripts/install-lb_controller.sh) because it is a cluster add-on, not
+# infrastructure — but its IAM policy and OIDC-scoped role belong in
+# Terraform, next to the OIDC provider they depend on.
+#
+# policies/aws-load-balancer-controller.json is the upstream policy published
+# with controller v3.5.0 (kubernetes-sigs/aws-load-balancer-controller
+# docs/install/iam_policy.json), vendored verbatim so the role's permissions
+# are reviewable in-repo and pinned to the controller version the install
+# script deploys. It is the one place wildcard actions/resources are allowed:
+# it is AWS's own policy for this controller, kept byte-identical so it can be
+# diffed against upstream. Re-vendor it whenever CHART_VERSION in
+# scripts/install-lb_controller.sh moves to a new controller minor version.
+# ---------------------------------------------------------------------------
+
+data "aws_iam_policy_document" "lb_controller_assume_role" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.eks.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:${var.lb_controller_namespace}:${var.lb_controller_service_account}"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_policy" "lb_controller" {
+  name        = "${local.name_prefix}-lb-controller-policy"
+  description = "AWS Load Balancer Controller permissions for the ${var.environment} EKS cluster"
+  policy      = file("${path.module}/policies/aws-load-balancer-controller.json")
+
+  tags = local.common_tags
+}
+
+resource "aws_iam_role" "lb_controller" {
+  name               = "${local.name_prefix}-lb-controller-role"
+  assume_role_policy = data.aws_iam_policy_document.lb_controller_assume_role.json
+
+  tags = local.common_tags
+}
+
+resource "aws_iam_role_policy_attachment" "lb_controller" {
+  role       = aws_iam_role.lb_controller.name
+  policy_arn = aws_iam_policy.lb_controller.arn
+}

@@ -65,3 +65,28 @@ module "rds" {
   skip_final_snapshot     = true
   backup_retention_period = 0
 }
+
+# ---------------------------------------------------------------------------
+# DNS & Ingress (PETPLAT-32)
+# Gated on var.domain_name: with no domain set, no hosted zone or certificate
+# is created and the rest of the environment plans/applies unchanged. Set
+# domain_name in terraform.tfvars to enable it.
+# ---------------------------------------------------------------------------
+
+module "dns" {
+  count  = var.domain_name == "" ? 0 : 1
+  source = "../../modules/dns"
+
+  project     = var.project
+  environment = var.environment
+
+  domain_name = var.domain_name
+  record_name = "petclinic-dev"
+
+  # Populated after the Ingress has provisioned an ALB — see variables.tf.
+  alb_dns_name       = var.alb_dns_name
+  alb_zone_id        = var.alb_zone_id
+  alb_discovery_tags = var.alb_discovery_tags
+
+  wait_for_certificate_validation = var.wait_for_certificate_validation
+}

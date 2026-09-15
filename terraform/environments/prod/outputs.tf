@@ -99,3 +99,33 @@ output "rds_secret_arn" {
   description = "Secrets Manager secret ARN for RDS credentials"
   value       = module.rds.secret_arn
 }
+
+output "lb_controller_role_arn" {
+  description = "IRSA role ARN for the AWS Load Balancer Controller service account (used by scripts/install-lb_controller.sh)"
+  value       = module.eks.lb_controller_role_arn
+}
+
+output "dns_zone_id" {
+  description = "Route 53 hosted zone ID (null when domain_name is unset)"
+  value       = one(module.dns[*].zone_id)
+}
+
+output "dns_name_servers" {
+  description = "Hosted zone name servers to delegate at the domain registrar (null when domain_name is unset)"
+  value       = one(module.dns[*].name_servers)
+}
+
+output "certificate_arn" {
+  description = "ACM certificate ARN for the Ingress certificate-arn annotation (null when domain_name is unset)"
+  value       = one(module.dns[*].certificate_arn)
+}
+
+output "app_fqdn" {
+  description = "Fully qualified domain name the app is served on (null when domain_name is unset)"
+  value       = one(module.dns[*].app_fqdn)
+}
+
+output "app_url" {
+  description = "HTTPS URL the app is served on (null when domain_name is unset)"
+  value       = one(module.dns[*].app_url)
+}

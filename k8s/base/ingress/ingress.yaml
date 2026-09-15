@@ -1,0 +1,73 @@
+# Public entry point for the platform (PETPLAT-30).
+#
+# The AWS Load Balancer Controller (PETPLAT-29) reconciles this Ingress into an
+# internet-facing ALB. All application routing happens inside the API Gateway
+# (Spring Cloud Gateway), so the ALB has exactly one rule: / -> api-gateway:8080.
+#
+# Placeholders are substituted with envsubst at apply time — see README.md in
+# this directory. They are environment-specific values that come from Terraform
+# outputs, so they are deliberately not baked into the manifest.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: petclinic-api-gateway
+  namespace: ${PETCLINIC_NAMESPACE}
+  labels:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: petclinic
+    # Applied with kubectl, not Helm — the per-service charts in
+    # helm/petclinic-service/ cover Deployments/Services, not this shared
+    # cluster entry point.
+    app.kubernetes.io/managed-by: kubectl
+  annotations:
+    # --- Load balancer shape ---
+    alb.ingress.kubernetes.io/load-balancer-name: petclinic-${ENVIRONMENT}-alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/ip-address-type: ipv4
+
+    # --- Listeners and TLS ---
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:eu-central-1:228870477355:certificate/0e6cdbfe-f36f-4e0e-a608-f30680ceec09"
+    # Redirects every HTTP request to HTTPS on 443; nothing is served over :80.
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+
+    # --- Health checks ---
+    # Spring Boot Actuator aggregate health endpoint on the api-gateway pods.
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
+    alb.ingress.kubernetes.io/healthcheck-port: "8080"
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+    alb.ingress.kubernetes.io/healthy-threshold-count: "2"
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: "3"
+    alb.ingress.kubernetes.io/success-codes: "200"
+
+    # --- Security groups ---
+    # Reuse the Terraform-managed ALB SG (modules/vpc) instead of letting the
+    # controller create one: security groups are the access perimeter in this
+    # all-public design (ADR-0001) and must stay owned by Terraform. Backend
+    # (node SG) rules are Terraform's too, hence manage-backend-...: "false".
+    alb.ingress.kubernetes.io/security-groups: petclinic-${ENVIRONMENT}-alb-sg
+    alb.ingress.kubernetes.io/manage-backend-security-group-rules: "false"
+
+    # --- Misc ---
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=60
+    alb.ingress.kubernetes.io/tags: Project=petclinic,Environment=${ENVIRONMENT},ManagedBy=kubectl
+spec:
+  # IngressClass created by the aws-load-balancer-controller Helm release.
+  # Preferred over the deprecated kubernetes.io/ingress.class annotation.
+  ingressClassName: alb
+  rules:
+    - host: ${PETCLINIC_HOST}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 8080

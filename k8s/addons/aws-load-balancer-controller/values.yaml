@@ -1,0 +1,67 @@
+# Helm values for the AWS Load Balancer Controller (PETPLAT-29).
+#
+# Installed by scripts/install-lb_controller.sh, which layers the four
+# cluster-specific values on top with --set (they come from Terraform outputs
+# and differ per environment):
+#
+#   clusterName
+#   region
+#   vpcId
+#   serviceAccount.annotations."eks.amazonaws.com/role-arn"
+#   defaultTags.Environment
+#
+# Chart: aws-load-balancer-controller from https://aws.github.io/eks-charts
+# Namespace: kube-system
+
+# Two replicas with the chart's default pod anti-affinity, so a node rotation
+# never leaves Ingress reconciliation stalled.
+replicaCount: 2
+configureDefaultAffinity: true
+
+podDisruptionBudget:
+  maxUnavailable: 1
+
+serviceAccount:
+  create: true
+  # Must match var.lb_controller_service_account in modules/eks — the IRSA
+  # trust policy is scoped to system:serviceaccount:kube-system:<this name>.
+  name: aws-load-balancer-controller
+
+# IngressClass "alb" plus its IngressClassParams CRD instance (PETPLAT-29).
+# Not made the cluster default: Ingresses opt in via spec.ingressClassName.
+ingressClass: alb
+createIngressClassResource: true
+ingressClassParams:
+  create: true
+ingressClassConfig:
+  default: false
+
+# Ingresses in this platform target pod IPs directly (see
+# k8s/base/ingress/ingress.yaml); make that the cluster-wide default too.
+defaultTargetType: ip
+
+# Security groups are Terraform's (modules/vpc) — they are the access perimeter
+# in this all-public design (ADR-0001). Stop the controller from mutating node
+# security group rules so Terraform stays the single source of truth.
+enableManageBackendSecurityGroupRules: false
+
+# The service mutator webhook rewrites every new type=LoadBalancer Service to
+# be controller-managed. This platform exposes traffic only through the Ingress
+# above, so leaving it on would silently capture unrelated Services.
+enableServiceMutatorWebhook: false
+
+# Tag everything the controller creates in AWS. Environment is added by the
+# install script.
+defaultTags:
+  Project: petclinic
+  ManagedBy: aws-load-balancer-controller
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+logLevel: info

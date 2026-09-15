@@ -110,3 +110,22 @@ variable "ebs_csi_addon_version" {
   type        = string
   default     = null
 }
+
+# ---------------------------------------------------------------------------
+# AWS Load Balancer Controller IRSA (PETPLAT-29)
+# Namespace and service account must match what the Helm release actually
+# creates (scripts/install-lb_controller.sh) — the OIDC trust policy is scoped
+# to this exact system:serviceaccount:{namespace}:{name} pair.
+# ---------------------------------------------------------------------------
+
+variable "lb_controller_namespace" {
+  description = "Namespace the AWS Load Balancer Controller is installed into"
+  type        = string
+  default     = "kube-system"
+}
+
+variable "lb_controller_service_account" {
+  description = "Name of the AWS Load Balancer Controller Kubernetes service account"
+  type        = string
+  default     = "aws-load-balancer-controller"
+}

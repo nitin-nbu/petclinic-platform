@@ -172,6 +172,21 @@ resource "aws_security_group_rule" "eks_node_ingress_nodeport_from_alb" {
   description              = "NodePort services from ALB"
 }
 
+# The Ingress uses target-type: ip (PETPLAT-30), so the ALB sends traffic and
+# health checks straight to pod IPs on the container port (8080) rather than to
+# a NodePort. Pod IPs are secondary IPs on node ENIs, which carry this SG, so
+# 8080 must be allowed from the ALB SG in addition to the NodePort range above
+# (kept for target-type: instance workloads). Mirrors the ALB SG's egress rules.
+resource "aws_security_group_rule" "eks_node_ingress_pod_traffic_from_alb" {
+  type                     = "ingress"
+  security_group_id        = aws_security_group.eks_node.id
+  from_port                = 8080
+  to_port                  = 8080
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.alb.id
+  description              = "ALB traffic and health checks to pod IPs (target-type: ip)"
+}
+
 # Terraform's aws_security_group resource strips the AWS-provisioned default
 # "allow all outbound" rule on creation (documented provider behavior — this
 # only happens automatically for SGs created directly via the AWS API/console).

@@ -37,3 +37,18 @@ output "kubeconfig_command" {
   description = "Command to update local kubeconfig for this cluster"
   value       = "aws eks update-kubeconfig --name ${aws_eks_cluster.main.name} --region ${data.aws_region.current.name}"
 }
+
+output "lb_controller_role_arn" {
+  description = "ARN of the IRSA role for the AWS Load Balancer Controller service account"
+  value       = aws_iam_role.lb_controller.arn
+}
+
+output "lb_controller_policy_arn" {
+  description = "ARN of the IAM policy attached to the AWS Load Balancer Controller role"
+  value       = aws_iam_policy.lb_controller.arn
+}
+
+output "lb_controller_service_account" {
+  description = "Namespace/name of the Kubernetes service account the LB controller role trusts"
+  value       = "${var.lb_controller_namespace}/${var.lb_controller_service_account}"
+}
