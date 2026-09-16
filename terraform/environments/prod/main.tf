@@ -90,3 +90,16 @@ module "dns" {
 
   wait_for_certificate_validation = var.wait_for_certificate_validation
 }
+
+# ---------------------------------------------------------------------------
+# Secrets Management (PETPLAT-33) — non-RDS application secrets.
+# ---------------------------------------------------------------------------
+
+module "secrets" {
+  source = "../../modules/secrets"
+
+  project     = var.project
+  environment = var.environment
+
+  openai_api_key = var.openai_api_key
+}

@@ -1,0 +1,24 @@
+# Syncs the GenAI service's OpenAI API key from Secrets Manager into the app
+# namespace (PETPLAT-36). ${PETCLINIC_NAMESPACE} and ${ENVIRONMENT} are
+# envsubst placeholders — see README.md in this directory.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: openai-api-key
+  namespace: ${PETCLINIC_NAMESPACE}
+  labels:
+    app.kubernetes.io/name: openai-api-key
+    app.kubernetes.io/part-of: petclinic
+    app.kubernetes.io/managed-by: kubectl
+    app.kubernetes.io/component: infrastructure
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: aws-secrets-manager
+    kind: ClusterSecretStore
+  target:
+    name: openai-api-key
+  data:
+    - secretKey: OPENAI_API_KEY
+      remoteRef:
+        key: petclinic/${ENVIRONMENT}/openai-api-key

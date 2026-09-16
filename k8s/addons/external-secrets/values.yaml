@@ -1,0 +1,50 @@
+# Helm values for External Secrets Operator (PETPLAT-34).
+#
+# Installed by scripts/install-external-secrets.sh, which layers the
+# cluster-specific value on top with --set (from Terraform outputs, differs
+# per environment):
+#
+#   serviceAccount.annotations."eks.amazonaws.com/role-arn"
+#
+# Chart: external-secrets from https://charts.external-secrets.io
+# Namespace: external-secrets
+#
+# The chart's CRDs and controller manifests are rendered with `helm template`
+# and applied with `kubectl apply` (not `helm install`) per PETPLAT-34's
+# acceptance criteria — see the install script for the full flow.
+
+installCRDs: true
+
+serviceAccount:
+  create: true
+  # Must match var.eso_service_account in modules/eks — the IRSA trust
+  # policy is scoped to system:serviceaccount:external-secrets:<this name>.
+  name: external-secrets-sa
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+webhook:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+certController:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+logLevel: info

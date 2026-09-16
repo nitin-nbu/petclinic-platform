@@ -54,3 +54,13 @@ variable "wait_for_certificate_validation" {
   type        = bool
   default     = false
 }
+
+# ---------------------------------------------------------------------------
+# Secrets Management (E-7)
+# ---------------------------------------------------------------------------
+
+variable "openai_api_key" {
+  description = "OpenAI API key for the genai-service, stored in Secrets Manager (PETPLAT-33). Set via a gitignored terraform.tfvars — never commit a real value."
+  type        = string
+  sensitive   = true
+}

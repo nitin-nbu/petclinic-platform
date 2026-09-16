@@ -129,3 +129,13 @@ output "app_url" {
   description = "HTTPS URL the app is served on (null when domain_name is unset)"
   value       = one(module.dns[*].app_url)
 }
+
+output "openai_secret_arn" {
+  description = "Secrets Manager ARN for the OpenAI API key"
+  value       = module.secrets.openai_secret_arn
+}
+
+output "eso_role_arn" {
+  description = "IRSA role ARN for the External Secrets Operator service account (used by scripts/install-external-secrets.sh)"
+  value       = module.eks.eso_role_arn
+}

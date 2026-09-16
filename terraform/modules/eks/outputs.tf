@@ -52,3 +52,18 @@ output "lb_controller_service_account" {
   description = "Namespace/name of the Kubernetes service account the LB controller role trusts"
   value       = "${var.lb_controller_namespace}/${var.lb_controller_service_account}"
 }
+
+output "eso_role_arn" {
+  description = "ARN of the IRSA role for the External Secrets Operator service account"
+  value       = aws_iam_role.eso.arn
+}
+
+output "eso_policy_arn" {
+  description = "ARN of the IAM policy attached to the External Secrets Operator role"
+  value       = aws_iam_policy.eso.arn
+}
+
+output "eso_service_account" {
+  description = "Namespace/name of the Kubernetes service account the ESO role trusts"
+  value       = "${var.eso_namespace}/${var.eso_service_account}"
+}

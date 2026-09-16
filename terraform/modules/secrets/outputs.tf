@@ -1,1 +1,4 @@
-# Placeholder — implemented in Epic E-7 (PETPLAT-33, PETPLAT-37)
+output "openai_secret_arn" {
+  description = "Secrets Manager ARN for the OpenAI API key"
+  value       = aws_secretsmanager_secret.openai_api_key.arn
+}

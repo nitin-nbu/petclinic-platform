@@ -129,3 +129,22 @@ variable "lb_controller_service_account" {
   type        = string
   default     = "aws-load-balancer-controller"
 }
+
+# ---------------------------------------------------------------------------
+# External Secrets Operator IRSA (PETPLAT-37)
+# Namespace and service account must match what the ESO install actually
+# creates (scripts/install-external-secrets.sh) — the OIDC trust policy is
+# scoped to this exact system:serviceaccount:{namespace}:{name} pair.
+# ---------------------------------------------------------------------------
+
+variable "eso_namespace" {
+  description = "Namespace External Secrets Operator is installed into"
+  type        = string
+  default     = "external-secrets"
+}
+
+variable "eso_service_account" {
+  description = "Name of the External Secrets Operator Kubernetes service account"
+  type        = string
+  default     = "external-secrets-sa"
+}
