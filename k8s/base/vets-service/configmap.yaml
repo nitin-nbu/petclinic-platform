@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vets-service-config
+  namespace: petclinic-dev
+  labels:
+    app.kubernetes.io/name: vets-service
+    app.kubernetes.io/part-of: petclinic
+    app.kubernetes.io/managed-by: kubectl
+    app.kubernetes.io/component: service
+data:
+  CONFIG_SERVER_URL: "http://config-server:8888"
+  # ${RDS_ENDPOINT} is rendered with envsubst before apply — see
+  # k8s/base/README.md (value comes from the rds Terraform module output).
+  SPRING_DATASOURCE_URL: "jdbc:mysql://${RDS_ENDPOINT}:3306/petclinic"

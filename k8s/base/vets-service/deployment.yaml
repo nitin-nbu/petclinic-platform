@@ -1,0 +1,112 @@
+# vets-service: MySQL-backed domain service. SPRING_DATASOURCE_URL comes from
+# vets-service-config (RDS endpoint is a Terraform output, rendered with envsubst
+# — see k8s/base/README.md). Credentials come from the rds-credentials K8s
+# Secret synced by External Secrets Operator (PETPLAT-35).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vets-service
+  namespace: petclinic-dev
+  labels:
+    app.kubernetes.io/name: vets-service
+    app.kubernetes.io/part-of: petclinic
+    app.kubernetes.io/managed-by: kubectl
+    app.kubernetes.io/component: service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vets-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: vets-service
+        app.kubernetes.io/part-of: petclinic
+        app.kubernetes.io/managed-by: kubectl
+        app.kubernetes.io/component: service
+    spec:
+      serviceAccountName: vets-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: wait-for-config-server
+          image: busybox:1.36
+          imagePullPolicy: Always
+          command:
+            - sh
+            - -c
+            - until wget -qO- http://config-server:8888/actuator/health; do sleep 5; done
+        - name: wait-for-discovery-server
+          image: busybox:1.36
+          imagePullPolicy: Always
+          command:
+            - sh
+            - -c
+            - until wget -qO- http://discovery-server:8761/actuator/health; do sleep 5; done
+      containers:
+        - name: vets-service
+          image: petclinic/vets-service:0.0.0-placeholder
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: false
+          ports:
+            - name: http
+              containerPort: 8083
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "docker,mysql"
+            - name: CONFIG_SERVER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: vets-service-config
+                  key: CONFIG_SERVER_URL
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: vets-service-config
+                  key: SPRING_DATASOURCE_URL
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rds-credentials
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rds-credentials
+                  key: password
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8083
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8083
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8083
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3

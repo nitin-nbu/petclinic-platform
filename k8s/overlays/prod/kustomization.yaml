@@ -1,0 +1,65 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: petclinic-prod
+
+resources:
+  - ../../base
+  - hpa-api-gateway.yaml
+  - hpa-customers-service.yaml
+  - hpa-visits-service.yaml
+  - hpa-vets-service.yaml
+  - hpa-genai-service.yaml
+
+# PETPLAT-46: prod overlay — HA replica counts. config-server, discovery-server,
+# api-gateway and the three domain services run 2 for availability; genai-service
+# and admin-server stay at 1 (cost saving / single-instance monitoring tool).
+# The domain-service and api-gateway counts are also the HPA `minReplicas`
+# (PETPLAT-47) — the HPA takes over scaling once traffic arrives.
+replicas:
+  - name: config-server
+    count: 2
+  - name: discovery-server
+    count: 2
+  - name: api-gateway
+    count: 2
+  - name: customers-service
+    count: 2
+  - name: visits-service
+    count: 2
+  - name: vets-service
+    count: 2
+  - name: genai-service
+    count: 1
+  - name: admin-server
+    count: 1
+
+# Rewrites the base placeholder image references to the prod ECR repos
+# (IMMUTABLE tags). ${AWS_ACCOUNT_ID} and ${IMAGE_TAG} are envsubst
+# placeholders — render with
+# `kubectl kustomize k8s/overlays/prod | envsubst | kubectl apply -f -`
+images:
+  - name: petclinic/config-server
+    newName: ${AWS_ACCOUNT_ID}.dkr.ecr.eu-central-1.amazonaws.com/petclinic-prod/config-server
+    newTag: ${IMAGE_TAG}
+  - name: petclinic/discovery-server
+    newName: ${AWS_ACCOUNT_ID}.dkr.ecr.eu-central-1.amazonaws.com/petclinic-prod/discovery-server
+    newTag: ${IMAGE_TAG}
+  - name: petclinic/api-gateway
+    newName: ${AWS_ACCOUNT_ID}.dkr.ecr.eu-central-1.amazonaws.com/petclinic-prod/api-gateway
+    newTag: ${IMAGE_TAG}
+  - name: petclinic/customers-service
+    newName: ${AWS_ACCOUNT_ID}.dkr.ecr.eu-central-1.amazonaws.com/petclinic-prod/customers-service
+    newTag: ${IMAGE_TAG}
+  - name: petclinic/visits-service
+    newName: ${AWS_ACCOUNT_ID}.dkr.ecr.eu-central-1.amazonaws.com/petclinic-prod/visits-service
+    newTag: ${IMAGE_TAG}
+  - name: petclinic/vets-service
+    newName: ${AWS_ACCOUNT_ID}.dkr.ecr.eu-central-1.amazonaws.com/petclinic-prod/vets-service
+    newTag: ${IMAGE_TAG}
+  - name: petclinic/genai-service
+    newName: ${AWS_ACCOUNT_ID}.dkr.ecr.eu-central-1.amazonaws.com/petclinic-prod/genai-service
+    newTag: ${IMAGE_TAG}
+  - name: petclinic/admin-server
+    newName: ${AWS_ACCOUNT_ID}.dkr.ecr.eu-central-1.amazonaws.com/petclinic-prod/admin-server
+    newTag: ${IMAGE_TAG}
